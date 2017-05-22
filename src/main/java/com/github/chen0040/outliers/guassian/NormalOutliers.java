@@ -20,7 +20,7 @@ public class NormalOutliers {
     protected final HashMap<Integer, NormalDistribution> model = new HashMap<>();;
 
     private double threshold = 0.02;
-    private boolean autoThresholding = true;
+    private boolean autoThresholding = false;
     private double autoThresholdingRatio = 0.05;
 
 

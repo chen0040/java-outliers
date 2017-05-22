@@ -47,6 +47,8 @@ public class MultiVariateNormalOutliers extends NormalOutliers {
 
     public void fit(DataFrame batch) {
 
+        super.fit(batch);
+
         int dimension = batch.row(0).toArray().length;
 
         matrixMu = new Matrix(dimension, 1);
