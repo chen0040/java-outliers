@@ -68,10 +68,6 @@ public abstract class NormalOutliers {
                 model.put(k, distribution);
             }
         }
-
-        if(isAutoThresholding()){
-            adjustThreshold(batch);
-        }
     }
 
     private double mean(List<Double> values){
