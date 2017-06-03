@@ -13,7 +13,7 @@ import java.util.*;
 
 @Getter
 @Setter
-public class NormalOutliers {
+public abstract class NormalOutliers {
 
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
@@ -22,26 +22,6 @@ public class NormalOutliers {
     private double threshold = 0.02;
     private boolean autoThresholding = false;
     private double autoThresholdingRatio = 0.05;
-
-
-    public void copy(NormalOutliers that){
-        model.clear();
-        for(Integer i : that.model.keySet()){
-            NormalDistribution d = that.model.get(i);
-            model.put(i, d);
-        }
-    }
-
-    public NormalOutliers makeCopy(){
-        NormalOutliers clone = new NormalOutliers();
-        clone.copy(this);
-        return clone;
-    }
-
-
-    public void scratch(){
-        model.clear();
-    }
 
     public boolean isAnomaly(DataRow tuple){
         double p = calculateProbability(tuple);
@@ -140,13 +120,12 @@ public class NormalOutliers {
 
     }
 
-    public double tune(DataFrame trainingData, DataFrame crossValudation, double confidence_level){
+    public double tune(DataFrame trainingData, DataFrame crossValidation, double confidence_level){
         fit(trainingData);
-        DataFrame crossValidation = trainingData.makeCopy();
         int n = crossValidation.rowCount();
         double error_rate = 1 - confidence_level;
 
-        List<Integer> orders = new ArrayList<Integer>();
+        List<Integer> orders = new ArrayList<>();
         final double[] p = new double[n];
         for(int i=0; i < n; ++i){
             p[i] = transform(crossValidation.row(i));

@@ -90,4 +90,57 @@ public class MultiVariateNormalOutliersUnitTest {
 
 
    }
+
+   @Test
+   public void test_simple_tuned(){
+
+      DataQuery.DataFrameQueryBuilder schema = DataQuery.blank()
+              .newInput("c1")
+              .newInput("c2")
+              .newOutput("anomaly")
+              .end();
+
+      Sampler.DataSampleBuilder negativeSampler = new Sampler()
+              .forColumn("c1").generate((name, index) -> randn() * 0.3 + (index % 2 == 0 ? -2 : 2))
+              .forColumn("c2").generate((name, index) -> randn() * 0.3 + (index % 2 == 0 ? -2 : 2))
+              .forColumn("anomaly").generate((name, index) -> 0.0)
+              .end();
+
+      Sampler.DataSampleBuilder positiveSampler = new Sampler()
+              .forColumn("c1").generate((name, index) -> rand(-4, 4))
+              .forColumn("c2").generate((name, index) -> rand(-4, 4))
+              .forColumn("anomaly").generate((name, index) -> 1.0)
+              .end();
+
+      DataFrame trainingData = schema.build();
+
+      trainingData = negativeSampler.sample(trainingData, 200);
+      trainingData = positiveSampler.sample(trainingData, 200);
+
+      System.out.println(trainingData.head(10));
+
+      DataFrame crossValidationData = schema.build();
+
+      crossValidationData = negativeSampler.sample(crossValidationData, 10);
+      crossValidationData = positiveSampler.sample(crossValidationData, 10);
+
+      MultiVariateNormalOutliers method = new MultiVariateNormalOutliers();
+
+
+      method.tune(trainingData, crossValidationData, 0.50);
+
+      BinaryClassifierEvaluator evaluator = new BinaryClassifierEvaluator();
+
+      for(int i = 0; i < crossValidationData.rowCount(); ++i){
+         boolean predicted = method.isAnomaly(crossValidationData.row(i));
+         boolean actual = crossValidationData.row(i).target() > 0.5;
+         evaluator.evaluate(actual, predicted);
+         logger.info("predicted: {}\texpected: {}", predicted, actual);
+      }
+
+      evaluator.report();
+
+
+
+   }
 }
